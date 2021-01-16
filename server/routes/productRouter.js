@@ -50,7 +50,7 @@ productRouter.delete(
   authController.verifyToken,
   productController.deleteProduct,
   (req, res) => {
-    res.status(200).json('Deleted product');
+    res.status(200).json({message: 'Deleted Product'});
   }
 );
 

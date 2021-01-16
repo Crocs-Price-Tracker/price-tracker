@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useHistory } from 'react-router-dom';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormControl from '@material-ui/core/FormControl';
 import FormLabel from '@material-ui/core/FormLabel';
@@ -15,6 +16,7 @@ import {
   Typography,
 } from '@material-ui/core';
 import Switch from '@material-ui/core/Switch';
+import Response from '../alert/response';
 
 const ProductForm = ({
   productId,
@@ -23,6 +25,7 @@ const ProductForm = ({
   formType,
   price,
   emailPreference,
+  setOpen
 }) => {
   const classes = useStyles();
 
@@ -38,7 +41,7 @@ const ProductForm = ({
     message: '',
   });
 
-  const [desiredPrice, updateDesiredPrice, resetDesiredPrice] = useInput(
+  const [desiredPrice, updateDesiredPrice] = useInput(
     formType === 'add' ? '$0.0' : price
   );
 
@@ -47,7 +50,10 @@ const ProductForm = ({
   );
   const handleClose = () => setOpen(false);
 
+  const [buttonDisabled, setButtonDisable] = useState(false);
+
   const handleChange = (event) => {
+    console.log('handle change event', event.target.checked);
     setEmailNotification(event.target.checked);
   };
 
@@ -55,17 +61,17 @@ const ProductForm = ({
     e.preventDefault();
 
     if (!desiredPrice) {
-      setAlert({
-        type: 'error',
-        message: 'Price input is required.',
-      });
+      // setAlert({
+      //   type: 'error',
+      //   message: 'Price input is required.',
+      // });
       return;
     }
 
-    // const desired_price = Number(desiredPrice);
     const url =
       formType === 'add' ? '/api/products/' : `/api/products/${productId}`;
 
+    setButtonDisable(true);
     fetch(url, {
       method: formType === 'add' ? 'POST' : 'PUT',
       headers: {
@@ -80,32 +86,44 @@ const ProductForm = ({
     })
       .then((res) => {
         if (res.status === 200) return res.json();
-        else if (res.status === 403) auth.signout(() => history.push('/'));
+        else if (res.status === 403) return auth.signout(() => history.push('/'));
 
         return res.json().then(({ err }) => {
           throw err;
         });
       })
       .then(({ message, email_preference, desired_price }) => {
-        setAlert({
-          type: 'success',
-          message: message,
-        });
+        setButtonDisable(false);
+        // setAlert({
+        //   type: 'success',
+        //   message: message,
+        // });
         if (formType === 'edit') {
           setEmailNotification(email_preference);
+          console.log('before :', desiredPrice);
           updateDesiredPrice(desired_price);
+          console.log('after :', desiredPrice);
+          return;
+        }
+
+        if(formType === 'add') {
+          setOpen(false);
+          return;
         }
       })
       .catch((err) => {
-        setAlert({
-          type: 'error',
-          message: err,
-        });
+        setButtonDisable(false);
+        // setAlert({
+        //   type: 'error',
+        //   message: err,
+        // });
       });
   };
+  // console.log(alert);
 
   return (
     <>
+    {/* <Response alert={alert} /> */}
       <form className={classes.loginForm} onSubmit={handleSubmit}>
         {formType === 'add' && (
           <TextField
@@ -115,6 +133,7 @@ const ProductForm = ({
             label="Product Name"
             variant="filled"
             value={productName}
+            style={{marginBottom: '20px'}}
           />
         )}
         <TextField
@@ -125,6 +144,7 @@ const ProductForm = ({
           value={desiredPrice}
           onChange={updateDesiredPrice}
           type="text"
+          style={{marginBottom: '20px'}}
         />
 
         <FormControlLabel
@@ -139,12 +159,14 @@ const ProductForm = ({
           }
           label="Send Email Notifications"
           labelPlacement="top"
+          style={{marginBottom: '20px'}}
         />
         <Button
           className={classes.registerBtn}
           type="submit"
           variant="contained"
           color="primary"
+          disabled={buttonDisabled}
         >
           {formType === 'add' ? 'Add Product' : 'Update Product'}
         </Button>

@@ -7,6 +7,7 @@ import {
   CardActions,
   CardContent,
   CardMedia,
+  CardTitle,
   Button,
   Typography,
 } from '@material-ui/core';
@@ -22,7 +23,6 @@ const ProductCard = ({
   updateProductList,
   setAlert,
   lowestPrice,
-  // deleteProduct={deleteProduct}
   storeUrl,
 }) => {
   const classes = useStyles();
@@ -68,27 +68,36 @@ const ProductCard = ({
   };
 
   return (
-    //flexDirection: 'column',
     <>
       <Grid container item xs={12} sm={6} md={4} lg={3} direction="column">
         <Card
-          className={classes.productCard}
-          // style={{
-          //   display: 'flex',
-          // }}
+          // className={classes.productCard}
+          style={{
+            display: 'flex',
+            // alignItems: 'flex-end',
+            // height: '100%',
+            flexDirection: 'column'
+          }}
         >
-          <CardActionArea style={{ height: 300 }}>
-            <CardMedia
+          <CardActionArea>
+            {/* <CardMedia
               className={classes.productCardMedia}
-              image={imageUrl}
+              // image={imageUrl}
               title={productName}
-            />
+            /> */}
+            
+            <CardMedia overlay={<CardTitle title={productName}/>}>
+              <img src={imageUrl} style={{width:'300px', height: '300px', margin:'10px auto', display:'block'}}/>
+            </CardMedia>
+
           </CardActionArea>
-          <CardContent style={{ flexGrow: 1 }}>
-            <Typography variant="h6">{productName}</Typography>
+          <CardContent style={{ 
+            // flexGrow: 1 
+            }}>
+            <Typography variant="h6" style={{marginBottom: '5px'}}>{productName}</Typography>
             <Typography
               className={classes.lowestPrice}
-              variant="h4"
+              variant="h6"
               color="primary"
             >
               Lowest Product Price: ${lowestPrice}
@@ -99,7 +108,10 @@ const ProductCard = ({
               </a>
             </Typography>
           </CardContent>
-          <CardActions>
+          <CardActions style={{
+                // flexGrow: 1,
+                justifyContent: 'center',
+              }}>
             <Button
               onClick={(e) => deleteProduct(productId, e)}
               variant="contained"

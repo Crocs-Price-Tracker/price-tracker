@@ -5,6 +5,7 @@ import { Grid, Typography } from '@material-ui/core';
 import { useAuth } from '../routes/useAuth';
 import ProductCard from './ProductCard';
 import Response from '../alert/response';
+import Spinner from '../search/Spinner';
 
 const ProductList = () => {
   const history = useHistory();
@@ -16,12 +17,15 @@ const ProductList = () => {
   const token = user.token ? user.token : null;
 
   const [productList, setProductList] = useState([]);
+  const [isLoading, setSpinner] = useState(false);
   const [alert, setAlert] = useState({
     type: '',
     message: '',
   });
 
   useEffect(() => {
+    setSpinner(true);
+
     fetch('/api/products', {
       method: 'GET',
       headers: {
@@ -37,9 +41,11 @@ const ProductList = () => {
         });
       })
       .then(({ products }) => {
+        setSpinner(false);
         setProductList(products);
       })
       .catch((err) => {
+        setSpinner(false);
         setAlert({
           type: 'error',
           message: err,
@@ -48,12 +54,14 @@ const ProductList = () => {
   }, []);
 
   const updateProductList = (id) => {
-    setProductList(productList.filter((product) => id === product.id));
+    setProductList(productList.filter((product) => id !== product.product_id));
   };
 
   return (
     <>
       <Response alert={alert} />
+      {isLoading && <Spinner /> }
+      {!isLoading &&
       <Grid
         container
         spacing={3}
@@ -70,7 +78,8 @@ const ProductList = () => {
               : 'Saved Products'}
           </Typography>
         </Grid>
-        {productList.length > 0 &&
+        {
+          productList.length > 0 &&
           productList.map(
             ({
               _id,
@@ -89,17 +98,16 @@ const ProductList = () => {
                     productName={product_name}
                     imageUrl={image_url}
                     storeName={store_name}
-                    // updateProductList={updateProductList}
+                    updateProductList={updateProductList}
                     setAlert={setAlert}
                     lowestPrice={lowest_daily_price}
-                    // deleteProduct={deleteProduct}
                     storeUrl={store_url}
                   />
                 </>
               );
-            }
-          )}
+            })}
       </Grid>
+    }
     </>
   );
 };
